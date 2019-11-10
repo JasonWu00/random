@@ -9,3 +9,7 @@ dev_urandom.o: dev_urandom.c dev_urandom.h
 
 run:
 	./testfile
+
+clean:
+	rm -rf *.o
+	rm -rf testfile
