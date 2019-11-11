@@ -14,10 +14,24 @@ void printArray(int array[10]) {
   }
 }
 
+void populateArrayWithRandoms(int array[10]) {
+  int fd_urandom = open("/dev/urandom", O_RDONLY, 0);
+  printf("Error message for opening urandom, if any: %d: %s\n", errno, strerror(errno));
+  printf("fd of urandom: %i\n", fd_urandom);
+
+  int counter = 0;
+  int middleMan = 0;
+  for (counter = 0; counter < 10; counter++) {
+    int err = read(fd_urandom, &middleMan, sizeof(int));
+    //printf("Error message if any: %d: %s\n", errno, strerror(errno));
+    //printf("The random number pulled: %i\n", middleMan);
+    array[counter] = middleMan;
+  }
+  close(fd_urandom);
+}
 
 int main() {
   umask(0);
-  printf("Test\n");
 
   /* some testing code, now commented out
   int fd;
@@ -40,35 +54,30 @@ int main() {
   for (counter = 0; counter < 10; counter++) {
     arrayOfInts[counter] = 0;//cleans out the array
   }
-  int fd_urandom = open("/dev/urandom", O_RDONLY, 0);
-  printf("Error message for opening urandom, if any: %d: %s\n", errno, strerror(errno));
-  printf("fd of urandom: %i\n", fd_urandom);
 
-  int middleMan = 0;
-  for (counter = 0; counter < 10; counter++) {
-    int err = read(fd_urandom, &middleMan, sizeof(int));
-    //printf("Error message if any: %d: %s\n", errno, strerror(errno));
-    //printf("The random number pulled: %i\n", middleMan);
-    arrayOfInts[counter] = middleMan;
-  }
+  populateArrayWithRandoms(arrayOfInts);
+
   printf("Printing random numbers extracted from urandom below.\n");
   printArray(arrayOfInts);
+  printf("\n");
 
   int fd_randomIntegers = open("random_integers.txt", O_RDWR | O_TRUNC, 0);
+  printf("fd_randomIntegers value: %i\n", fd_randomIntegers);
   printf("Error message for opening random integer textfile, if any: %d: %s\n", errno, strerror(errno));
   printf("fd of textfile: %i\n", fd_randomIntegers);
 
   int bytesWritten = write(fd_randomIntegers, arrayOfInts, sizeof(arrayOfInts));
-  printf("%i bytes written into textfile\n", bytesWritten);
-  printf("Error message for writing to random integers textfile, if any: %d, %s\n", errno, strerror(errno));
+  printf("%i bytes written into textfile\n\n", bytesWritten);
+
 
   int outputArray[10];
   for (counter = 0; counter < 10; counter++) {
     outputArray[counter] = 0;//cleans out the array
   }
-  int bytesRead = read(fd_randomIntegers, outputArray, 4);
+
+  int bytesRead = pread(fd_randomIntegers, outputArray, sizeof(outputArray), 0);
+  printf("Error message for reading from textfile, if any: %d: %s\n", errno, strerror(errno));
   printf("%i bytes read to array\n", bytesRead);
-  printf("Error message for copying to array, if any: %d, %s\n", errno, strerror(errno));
   printf("Now printing the array with the integers copied from the textfile:\n");
   printArray(outputArray);
   return 0;
