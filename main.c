@@ -36,13 +36,15 @@ int main() {
   */
 
   int arrayOfInts[10];
+  int counter = 0;
+  for (counter = 0; counter < 10; counter++) {
+    arrayOfInts[counter] = 0;//cleans out the array
+  }
   int fd_urandom = open("/dev/urandom", O_RDONLY, 0);
   printf("Error message for opening urandom, if any: %d: %s\n", errno, strerror(errno));
-  int fd_randomIntegers = open("random_integers.txt", O_RDWR | O_CREAT, 0);
-  printf("Error message for opening random integer textfile, if any: %d: %s\n", errno, strerror(errno));
+  printf("fd of urandom: %i\n", fd_urandom);
 
   int middleMan = 0;
-  int counter = 0;
   for (counter = 0; counter < 10; counter++) {
     int err = read(fd_urandom, &middleMan, sizeof(int));
     //printf("Error message if any: %d: %s\n", errno, strerror(errno));
@@ -52,15 +54,20 @@ int main() {
   printf("Printing random numbers extracted from urandom below.\n");
   printArray(arrayOfInts);
 
-  close(fd_randomIntegers);
-  fd_randomIntegers = open("random_integers.txt", O_RDWR, 0);
+  int fd_randomIntegers = open("random_integers.txt", O_RDWR | O_TRUNC, 0);
+  printf("Error message for opening random integer textfile, if any: %d: %s\n", errno, strerror(errno));
+  printf("fd of textfile: %i\n", fd_randomIntegers);
 
-  int errTwo = write(fd_randomIntegers, &arrayOfInts, sizeof(arrayOfInts));
+  int bytesWritten = write(fd_randomIntegers, arrayOfInts, sizeof(arrayOfInts));
+  printf("%i bytes written into textfile\n", bytesWritten);
   printf("Error message for writing to random integers textfile, if any: %d, %s\n", errno, strerror(errno));
-  printf("DEBUG: size of an int: %li\n", sizeof(int));
 
   int outputArray[10];
-  int errThree = read(fd_randomIntegers, &outputArray, sizeof(outputArray));
+  for (counter = 0; counter < 10; counter++) {
+    outputArray[counter] = 0;//cleans out the array
+  }
+  int bytesRead = read(fd_randomIntegers, outputArray, 4);
+  printf("%i bytes read to array\n", bytesRead);
   printf("Error message for copying to array, if any: %d, %s\n", errno, strerror(errno));
   printf("Now printing the array with the integers copied from the textfile:\n");
   printArray(outputArray);
