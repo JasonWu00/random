@@ -66,7 +66,7 @@ int main() {
   printf("Error message for opening random integer textfile, if any: %d: %s\n", errno, strerror(errno));
   printf("fd of textfile: %i\n", fd_randomIntegers);
 
-  int bytesWritten = write(fd_randomIntegers, arrayOfInts, sizeof(arrayOfInts));
+  int bytesWritten = pwrite(fd_randomIntegers, arrayOfInts, sizeof(arrayOfInts), 0);
   printf("%i bytes written into textfile\n\n", bytesWritten);
 
 
